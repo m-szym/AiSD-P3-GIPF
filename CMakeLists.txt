@@ -3,4 +3,4 @@ project(GIPF)
 
 set(CMAKE_CXX_STANDARD 23)
 
-add_executable(GIPF main.cpp)
+add_executable(GIPF main.cpp Board.cpp Board.h Hex.cpp Hex.h xN.cpp xN.h constants.h)
