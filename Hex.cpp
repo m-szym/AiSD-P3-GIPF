@@ -44,6 +44,20 @@ Hex::Hex(int q, int r, int s) {
 
 }
 
+int Hex::neighbour_direction(const Hex &neighbour) const {
+    for (int d = 0; d < HEX_DIRECTIONS_COUNT; d++) {
+        if (hex_neighbour(d) == neighbour)
+            return d;
+    }
+    return -1;
+}
+
+//Hex::Hex(const Hex& other) {
+//    iq = other.q();
+//    ir = other.r();
+//    is = other.s();
+//}
+
 
 bool operator==(const Hex &first, const Hex &second) {
     if (first.q() == second.q() && first.r() == second.r() && first.s() == second.s())

@@ -31,7 +31,13 @@ public:
     void set_tag(int t) {
         tag = t;
     };
-
+//    Hex(const Hex& other);
+//    Hex operator=(const Hex& other) {
+//        iq = other.q();
+//        ir = other.r();
+//        is = other.s();
+//        return *this;
+//    }
     Hex(int q, int r);
     Hex(int q, int r, int s);   //TODO: throw exeption if s != -q - r
 
@@ -40,6 +46,7 @@ public:
 
     Hex hex_direction(int direction) const;
     Hex hex_neighbour(int direction) const;
+    int neighbour_direction(const Hex& neighbour) const;
 
     int q() const;
     int r() const;
@@ -56,6 +63,7 @@ bool operator!=(const Hex& first, const Hex& second);
 Hex operator+(const Hex& first, const Hex& second);
 Hex operator-(const Hex& first, const Hex& second);
 Hex operator*(const Hex& first, int k);
+Hex operator<=>(const Hex& first, const Hex& second);
 
 int length(const Hex& hex);
 int distance(const Hex& first, const Hex& second);
@@ -66,6 +74,7 @@ Hex hex_neighbour(const Hex& hex, int direction);
 Hex rotate_right(const Hex& hex);
 Hex rotate_left(const Hex& hex);
 
+const Hex EMPTY_HEX(INT_MAX, INT_MAX);
 
 const std::vector<Hex> hex_directions = {
         {1,  0},
