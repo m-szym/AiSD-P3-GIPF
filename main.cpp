@@ -65,7 +65,7 @@ int main() {
 //
 //    b.print_cont();
 //    //b.print_xN();
-//    auto l = b.get_line(b.key_map.at("2B"), DIRS::SE);
+//    auto l = b.get_fullline(b.key_map.at("2B"), DIRS::SE);
 //    for (auto& x : l) {
 //        //x.print();
 //    }

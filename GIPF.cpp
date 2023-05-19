@@ -72,7 +72,7 @@ void GIPF::make_move(std::pair<Hex, Hex> move) {
 
     if (is_valid_move_basic(move)) {
         int dir = move.first.neighbour_direction(move.second);
-        auto path = board.get_line(move.first, dir);
+        auto path = board.get_fullline(move.first, dir);
         if (board.line_has_empty_hex(path)) {
             board.push_line(path, current_player);
         }
@@ -103,4 +103,46 @@ bool GIPF::is_valid_move_basic(std::pair<Hex, Hex> move) {
 void GIPF::simple_move() {
     std::pair<Hex, Hex> move = read_move();
     make_move(move);
+}
+
+void GIPF::kill_line(std::vector<Hex> line) {
+    if (line.size() < killing_number) {
+        return;
+    }
+
+    int white_row = 0;
+    int black_row = 0;
+    auto it = line.begin();
+    auto next = it + 1;
+    while (next != line.end()) {
+        if (board[*it] == EMPTY_PLACE_SYMBOL)
+            break;
+
+        if (board[*it] == board[*next]) {
+            if (board[*it] == WHITE_SYMBOL)
+                white_row++;
+            else
+                black_row++;
+        }
+
+        it++;
+        next++;
+    }
+
+    if (white_row >= killing_number || black_row >= killing_number) {
+        for (auto hex : line) {
+            if (board[hex] == EMPTY_PLACE_SYMBOL)
+                break;
+
+            //board.set(hex, UNDEAD_SYMBOL);    -> mark potentially dead
+
+            if (white_row >= killing_number) {
+                if (board[hex] == WHITE_SYMBOL)
+                    board.set(hex, EMPTY_PLACE_SYMBOL);
+            }
+                white_captured++;
+            } else {
+        }
+    }
+
 }

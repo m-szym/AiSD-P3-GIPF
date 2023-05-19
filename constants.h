@@ -8,8 +8,8 @@
 const char EMPTY_PLACE_SYMBOL = '_';
 const char WHITE_SYMBOL = 'W';
 const char BLACK_SYMBOL = 'B';
-
 const char DOT_SYMBOL = '.';
+const char UNDEAD_SYMBOL = 'U';
 
 const std::string BAD_MOVE_ERROR = "illegal move";
 const std::string BAD_COORDINATES_ERROR = "illegal coordinates";

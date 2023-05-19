@@ -46,9 +46,12 @@ public:
 
     void find_dots();   //TODO
 
-    std::vector<Hex> get_line(Hex starting_hex, int direction);     //każdy Hex w linii na pewno znajduje się na planszy
-                                                                    //można obiecać, że nie będzie out_of_range
-                                                                    //nie bierze kropek
+    std::vector<Hex> get_fullline(Hex starting_hex, int direction);     //każdy Hex w linii na pewno znajduje się na planszy
+                                                                        //można obiecać, że nie będzie out_of_range
+                                                                        //nie bierze kropek
+
+    std::vector<Hex> get_wline(Hex starting_hex, int direction);        //jak fullline, ale do pierwszego wolnego miejsca / kropki
+
     bool line_has_empty_hex(const std::vector<Hex>& line);
     void push_line(std::vector<Hex> line, char value);
 

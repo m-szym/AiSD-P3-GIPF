@@ -226,12 +226,28 @@ void Board::read_map() {
 
 }
 
-std::vector<Hex> Board::get_line(Hex starting_hex, int direction) {
+std::vector<Hex> Board::get_fullline(Hex starting_hex, int direction) {
     std::vector<Hex> line;
     Hex current_hex = starting_hex;
     while (map.find(current_hex) != map.end()) {
         if (map.at(current_hex) != DOT_SYMBOL)
             line.push_back(current_hex);
+        current_hex = current_hex.hex_neighbour(direction);
+    }
+    return line;
+}
+
+std::vector<Hex> Board::get_wline(Hex starting_hex, int direction) {
+    std::vector<Hex> line;
+    Hex current_hex = starting_hex;
+    while (map.find(current_hex) != map.end()) {
+        if (map.at(current_hex) != DOT_SYMBOL)
+            if (map.at(current_hex) != EMPTY_PLACE_SYMBOL) {
+                line.push_back(current_hex);
+            }
+            else {
+                break;
+            }
         current_hex = current_hex.hex_neighbour(direction);
     }
     return line;
@@ -309,6 +325,8 @@ bool Board::is_dot(const std::string &gf1_coords) const {
         return false;
     }
 }
+
+
 
 
 

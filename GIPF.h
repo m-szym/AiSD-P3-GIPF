@@ -34,6 +34,8 @@ public:
     void make_move(std::pair<Hex, Hex> move);
     void simple_move();
 
+    void kill_line(std::vector<Hex> line);
+
 
 };
 
