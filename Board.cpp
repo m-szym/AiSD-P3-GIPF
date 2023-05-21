@@ -5,8 +5,12 @@
 #include "Board.h"
 
 Board::Board(int size)
-    : real_size(size + 1), playing_field_size(size)
-{
+    : real_size(size + 1), playing_field_size(size), map{}
+{}
+
+void Board::construct_map(std::unordered_map<Hex, std::string> &hex_coords,
+                          std::unordered_map<std::string, Hex> &coords_hex) {
+    int size = playing_field_size;
     int x = GIPF_INDEX_START_INT;
     char N = GIPF_INDEX_START_CHAR;
 
@@ -15,7 +19,10 @@ Board::Board(int size)
         int r2 = std::min(size, -q + size);
         for (int r = r1; r <= r2; r++) {
             Hex h(q, r);
-            key_map.emplace(std::to_string(x) + std::string(1, N), h);
+            std::string coords = std::to_string(x) + std::string(1, N);
+            hex_coords.emplace(h, coords);
+            coords_hex.emplace(coords, h);
+
             map.emplace(h, EMPTY_PLACE_SYMBOL);
             x++;
         }
@@ -43,36 +50,6 @@ void Board::find_dots() {
     }
 }
 
-void Board::print() const
-{
-    int n = playing_field_size;
-
-    int x = 0;
-    char N = 'A';
-
-    for (int q = -n; q <= n; q++) {
-        int r1 = std::max(-n, -q - n);
-        int r2 = std::min( n, -q + n);
-        for (int i = -n; i < n - r2 + r1; i++) {
-            std::cout << "  ";
-        }
-        for (int r = r1; r <= r2; r++) {
-            //std::cout << "__  ";
-            //std::cout << (char) (map.at(Hex(q, r)) + 60) << " ";
-            int f = map.at(Hex(q, r));
-
-            std::cout << f << "  ";
-            if (f < 10)
-                std::cout << " ";
-
-            x++;
-        }
-        std::cout << std::endl;
-        x = 0;
-        N++;
-    }
-}
-
 void Board::print_xN() const
 {
     int n = playing_field_size;
@@ -89,7 +66,7 @@ void Board::print_xN() const
         for (int r = r1; r <= r2; r++) {
             //std::cout << "__  ";
             //std::cout << (char) (map.at(Hex(q, r)) + 60) << " ";
-            std::cout << std::string(1, N) + std::to_string(x) << "  ";
+            std::cout << std::to_string(x) + std::string(1, N)<< "  ";
             //int f = map.at(Hex(q, r));
 
 //            std::cout << f << "  ";
@@ -160,48 +137,9 @@ void Board::print_gipf() const {
     }
 }
 
-void Board::print_coords_gipf() const
-{
-    int n = playing_field_size;
-
-    int x = 1;
-    char N = 'A';
-
-    for (int q = -n; q <= n; q++) {
-        int r1 = std::max(-n, -q - n);
-        int r2 = std::min( n, -q + n);
-        for (int i = -n; i < n - r2 + r1; i++) {
-            std::cout << "  ";
-        }
-        for (int r = r1; r <= r2; r++) {
-            //std::cout << "__  ";
-            //std::cout << (char) (map.at(Hex(q, r)) + 60) << " ";
-            std::cout << std::string(1, N) + std::to_string(x) << "  ";
-            //int f = map.at(Hex(q, r));
-
-//            std::cout << f << "  ";
-//            if (f < 10)
-//                std::cout << " ";
-
-            x++;
-        }
-        std::cout << std::endl;
-        x = 1;
-        N++;
-    }
-}
-
 int Board::operator[](const Hex& hex) const {
     try {
         return map.at(hex);
-    } catch (std::out_of_range &e) {
-        return EMPTY_PLACE_SYMBOL;
-    }
-}
-
-int Board::operator[](const std::string &s) const {
-    try {
-        return map.at(key_map.at(s));
     } catch (std::out_of_range &e) {
         return EMPTY_PLACE_SYMBOL;
     }
@@ -211,6 +149,7 @@ void Board::read_map() {
     int n = playing_field_size - 1;
     int c = ' ';
 
+
     for (int q = -n; q <= n; q++) {
         int r1 = std::max(-n, -q - n);
         int r2 = std::min( n, -q + n);
@@ -219,11 +158,9 @@ void Board::read_map() {
             while (!(c == EMPTY_PLACE_SYMBOL || c == WHITE_SYMBOL || c == BLACK_SYMBOL)) {
                 c = getchar();
             }
-            //std::cout << (char) c << ".";
-            map[rotate_right(Hex(q, r))] = c;
+            map[rotate_right(Hex(q, r))] = (char) c;
         }
     }
-
 }
 
 std::vector<Hex> Board::get_fullline(Hex starting_hex, int direction) {
@@ -257,17 +194,6 @@ char Board::set(Hex hex, char value) {
     try {
         char old_value = map.at(hex);
         map[hex] = value;
-        return old_value;
-    } catch (std::out_of_range& e) {
-        std::cout << "Out of range: " << e.what() << std::endl;
-        return 0;
-    }
-}
-
-char Board::set(const std::string& gf1_coords, char value) {
-    try {
-        char old_value = map.at(key_map.at(gf1_coords));
-        map[key_map.at(gf1_coords)] = value;
         return old_value;
     } catch (std::out_of_range& e) {
         std::cout << "Out of range: " << e.what() << std::endl;
@@ -318,11 +244,37 @@ bool Board::is_dot(Hex hex) const {
     }
 }
 
-bool Board::is_dot(const std::string &gf1_coords) const {
-    try {
-        return map.at(key_map.at(gf1_coords)) == DOT_SYMBOL;
-    } catch (std::out_of_range& e) {
-        return false;
+bool Board::line_was_visited(const std::vector<Hex> &line) const {
+    for (Hex h : line) {
+        if (map.at(h) == WHITE_TARGET_OF_WHITE_SYMBOL || map.at(h) == WHITE_TARGET_OF_BLACK_SYMBOL
+         || map.at(h) == BLACK_TARGET_OF_WHITE_SYMBOL || map.at(h) == BLACK_TARGET_OF_BLACK_SYMBOL)
+            return true;
+    }
+    return false;
+}
+
+std::vector<std::vector<Hex>> Board::get_dotlines() {
+    std::vector<std::vector<Hex>> dotlines;
+    for (auto kv : map) {
+        if (kv.second == DOT_SYMBOL) {
+            for (int i = 0; i < HEX_DIRECTIONS_COUNT; ++i) {
+                try {
+                    dotlines.push_back(get_fullline(kv.first, i));
+                } catch (std::out_of_range& e) {
+                    continue;
+                }
+            }
+        }
+    }
+    return dotlines;
+}
+
+void Board::clear_board() {
+    for (auto kv : map) {
+        if (map[kv.first] == WHITE_TARGET_OF_WHITE_SYMBOL || map[kv.first] == WHITE_TARGET_OF_BLACK_SYMBOL)
+            map[kv.first] = WHITE_SYMBOL;
+        else if (map[kv.first] == BLACK_TARGET_OF_WHITE_SYMBOL || map[kv.first] == BLACK_TARGET_OF_BLACK_SYMBOL)
+            map[kv.first] = BLACK_SYMBOL;
     }
 }
 

@@ -5,7 +5,7 @@
 #include "Hex.h"
 
 Hex::Hex(int q, int r)
-    : iq(q), ir(r), is(-q-r), tag(0)
+    : iq(q), ir(r)
 {}
 
 int Hex::q() const {
@@ -17,7 +17,7 @@ int Hex::r() const {
 }
 
 int Hex::s() const {
-    return is;
+    return -iq -ir;
 }
 
 
@@ -26,7 +26,7 @@ int Hex::distance(const Hex &other) const {
 }
 
 int Hex::length() const {
-    return int((abs(iq) + abs(ir) + abs(is)) / 2);
+    return int((abs(iq) + abs(ir) + abs(s())) / 2);
 }
 
 Hex Hex::hex_direction(int direction) const {
@@ -40,7 +40,7 @@ Hex Hex::hex_neighbour(int direction) const {
 Hex::Hex(int q, int r, int s) {
     iq = q;
     ir = r;
-    is = s;
+    //is = s;
 
 }
 

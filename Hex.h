@@ -24,13 +24,9 @@ enum DIRS {
 class Hex {
 private:
 
-    int iq, ir, is;
+    int iq, ir;
 
 public:
-    int tag;
-    void set_tag(int t) {
-        tag = t;
-    };
 //    Hex(const Hex& other);
 //    Hex operator=(const Hex& other) {
 //        iq = other.q();
@@ -53,7 +49,7 @@ public:
     int s() const;
 
     void print() const {
-        std::cout << "q: " << iq << " r: " << ir << " s: " << is << std::endl;
+        std::cout << "q: " << iq << " r: " << ir << " s: " << s() << std::endl;
     }
 
 };

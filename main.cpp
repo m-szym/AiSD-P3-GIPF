@@ -18,7 +18,7 @@
  */
 
 int main() {
-   Board b(4);
+   //Board b(4);
 //
     //b.read_map();
 
@@ -85,10 +85,11 @@ int main() {
 //    b.print_cont();
 
     GIPF g(4,4,4,4);
-    g.board.read_map();
-    g.board.set("3C", 'c');
-    g.board.set("2B", 'b');
-    g.board.set("5F", 'd');
+    //g.board.read_map();
+    //g.add_piece("2B", 'x');
+    g.add_piece("3C", 'W');
+    g.add_piece("2B", 'W');
+    g.add_piece("5F", 'W');
     g.board.print_cont();
     g.board.print_xN();
 
