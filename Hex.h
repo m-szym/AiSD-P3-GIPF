@@ -59,7 +59,7 @@ bool operator!=(const Hex& first, const Hex& second);
 Hex operator+(const Hex& first, const Hex& second);
 Hex operator-(const Hex& first, const Hex& second);
 Hex operator*(const Hex& first, int k);
-Hex operator<=>(const Hex& first, const Hex& second);
+//Hex operator<=>(const Hex& first, const Hex& second);
 
 int length(const Hex& hex);
 int distance(const Hex& first, const Hex& second);

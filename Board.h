@@ -11,6 +11,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <algorithm>
 
 class Board {
 
@@ -25,7 +26,7 @@ public:
 
 
 
-    int operator[](const Hex& hex) const;   //<- do poprawy dalej
+    char operator[](const Hex& hex) const;   //<- do poprawy dalej
 
     //void print() const;
     void print_gipf () const;
@@ -61,6 +62,8 @@ public:
 
     void construct_map(std::unordered_map<Hex, std::string> &hex_coords,
                        std::unordered_map<std::string, Hex> &coords_hex);
+
+    void new_read_map(std::vector<char> flat_board);
 };
 
 

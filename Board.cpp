@@ -115,9 +115,6 @@ void Board::print_cont() const
 void Board::print_gipf() const {
     int n = playing_field_size;
 
-    int x = GIPF_INDEX_START_INT;
-    char N = GIPF_INDEX_START_CHAR;
-
     for (int q = -n; q <= n; q++) {
         int r1 = std::max(-n, -q - n);
         int r2 = std::min(n, -q + n);
@@ -127,21 +124,23 @@ void Board::print_gipf() const {
         }
 
         for (int r = r1; r <= r2; r++) {
-            std::cout << (char) map.at(rotate_left(Hex(q, r))) << SPACER;
-            x++;
-        }
+            Hex rh = rotate_right(Hex(q, r));
+            if (map.at(rh) == DOT_SYMBOL)
+                continue;
+            else
+                std::cout << (char) map.at(rh) << SPACER;
 
+            //std::cout << (char) map.at(rotate_left(Hex(q, r))) << SPACER;
+        }
         std::cout << std::endl;
-        x = GIPF_INDEX_START_INT;
-        N++;
     }
 }
 
-int Board::operator[](const Hex& hex) const {
+char Board::operator[](const Hex& hex) const {
     try {
         return map.at(hex);
     } catch (std::out_of_range &e) {
-        return EMPTY_PLACE_SYMBOL;
+        return ERROR_SYMBOL;
     }
 }
 
@@ -163,11 +162,26 @@ void Board::read_map() {
     }
 }
 
+void Board::new_read_map(std::vector<char> flat_board) {
+    int n = playing_field_size - 1;
+    int c = ' ';
+
+    auto it = flat_board.begin();
+    for (int q = -n; q <= n; q++) {
+        int r1 = std::max(-n, -q - n);
+        int r2 = std::min( n, -q + n);
+        for (int r = r1; r <= r2; r++) {
+            map[rotate_right(Hex(q, r))] = *it;
+            it++;
+        }
+    }
+}
+
 std::vector<Hex> Board::get_fullline(Hex starting_hex, int direction) {
     std::vector<Hex> line;
     Hex current_hex = starting_hex;
     while (map.find(current_hex) != map.end()) {
-        if (map.at(current_hex) != DOT_SYMBOL)
+        if (map.at(current_hex) != DOT_SYMBOL && map.at(current_hex) != USED_DOT_SYMBOL)
             line.push_back(current_hex);
         current_hex = current_hex.hex_neighbour(direction);
     }
@@ -259,7 +273,18 @@ std::vector<std::vector<Hex>> Board::get_dotlines() {
         if (kv.second == DOT_SYMBOL) {
             for (int i = 0; i < HEX_DIRECTIONS_COUNT; ++i) {
                 try {
-                    dotlines.push_back(get_fullline(kv.first, i));
+                    if (map.at(hex_neighbour(kv.first, i)) != DOT_SYMBOL) {
+                        auto line = get_fullline(kv.first, i);
+                        dotlines.push_back(line);
+                        auto n = hex_neighbour(kv.first, i);
+                        while (map.find(n) != map.end()) {
+                            if (map.at(n) == DOT_SYMBOL) {
+                                set(n, USED_DOT_SYMBOL);
+                                break;
+                            }
+                            n = hex_neighbour(n, i);
+                        }
+                    }
                 } catch (std::out_of_range& e) {
                     continue;
                 }
