@@ -198,8 +198,7 @@ std::vector<Hex> Board::get_wline(Hex starting_hex, int direction) {
         if (map.at(current_hex) != DOT_SYMBOL)
             if (map.at(current_hex) != EMPTY_PLACE_SYMBOL) {
                 line.push_back(current_hex);
-            }
-            else {
+            } else {
                 break;
             }
         current_hex = current_hex.hex_neighbour(direction);
@@ -262,18 +261,24 @@ std::vector<std::vector<Hex>> Board::get_dotlines() {
     std::vector<std::vector<Hex>> dotlines;
     for (auto kv : map) {
         if (kv.second == DOT_SYMBOL) {
+            map[kv.first] = USED_DOT_SYMBOL;
             for (int i = 0; i < HEX_DIRECTIONS_COUNT; ++i) {
                 try {
-                    if (map.at(hex_neighbour(kv.first, i)) != DOT_SYMBOL) {
-                        auto line = get_fullline(kv.first, i);
-                        dotlines.push_back(line);
+                    if (map.at(hex_neighbour(kv.first, i)) != DOT_SYMBOL && map.at(hex_neighbour(kv.first, i)) != USED_DOT_SYMBOL) {
+                        bool valid = false;
                         auto n = hex_neighbour(kv.first, i);
                         while (map.find(n) != map.end()) {
                             if (map.at(n) == DOT_SYMBOL) {
-                                set(n, USED_DOT_SYMBOL);
+                                //set(n, USED_DOT_SYMBOL);
+                                valid = true;
                                 break;
                             }
                             n = hex_neighbour(n, i);
+                        }
+
+                        if (valid) {
+                            auto line = get_fullline(kv.first, i);
+                            dotlines.push_back(line);
                         }
                     }
                 } catch (std::out_of_range& e) {

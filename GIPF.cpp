@@ -248,12 +248,13 @@ bool GIPF::is_valid_move_basic(std::vector<Hex> move) {
 void GIPF::simple_move() {
     auto move = read_move();
     make_move(move);
+    board.print_gipf();
     evaluate_turn(move);
 }
 
 bool GIPF::mark_target_line(const std::vector<Hex>& line) {
     if (line.size() < killing_number) {
-        std::cout << "too small line" << std::endl;     //TODO: remove
+        //std::cout << "too small line "<< line.size() << std::endl;     //TODO: remove
         return false;
     }
 
@@ -291,7 +292,7 @@ bool GIPF::mark_target_line(const std::vector<Hex>& line) {
     }
 
     if (col) {
-        std::cout << "TUTAJ" << std::endl;
+        //std::cout << "TUTAJ" << std::endl;
         for (auto x : line) {
             std::cout << "\t" << translate(x) << " ";
         }
@@ -299,42 +300,43 @@ bool GIPF::mark_target_line(const std::vector<Hex>& line) {
         return true;
     }
 
-    std::cout << "killing line" << std::endl;
+    //std::cout << "killing line" << std::endl;
 
     for (auto hex : line) {
         if (board[hex] == WHITE_SYMBOL || board[hex] == BLACK_SYMBOL || board[hex] == EMPTY_PLACE_SYMBOL) {     //ie is not already part of target line
-            std::cout << "marking " << translate(hex) << " --> ";
+            //std::cout << "marking " << translate(hex) << " --> ";
             if (white_line >= killing_number) {
+                int wm = 0;
                 if (board[hex] == BLACK_SYMBOL) {
-                    std::cout << "b->w at " << translate(hex) << std::endl;
+                    //std::cout << "b->w at " << translate(hex) << std::endl;
                     board.set(hex, BLACK_TARGET_OF_WHITE_SYMBOL);
                 } else if (board[hex] == WHITE_SYMBOL) {
-                    std::cout << "w->w at " << translate(hex) << std::endl;
+                    //std::cout << "w->w at " << translate(hex) << std::endl;
                     board.set(hex, WHITE_TARGET_OF_WHITE_SYMBOL);
                 } else if (board[hex] == EMPTY_PLACE_SYMBOL){
                     //board.set(hex, EMPTY_TARGET_SYMBOL);
                     //std::cout << "_->_ at " << translate(hex) << std::endl;
-                    std::cout << "breaking on _ at " << translate(hex) << std::endl;
-                    break;
+                    //std::cout << "breaking on _ at " << translate(hex) << std::endl;
+                    //break;
                 } else {
-                    std::cout << "error char at " << translate(hex) << " == " << board[hex] << std::endl;
+                    //std::cout << "error char at " << translate(hex) << " == " << board[hex] << std::endl;
                 }
             } else if (black_line >= killing_number) {
                 if (board[hex] == WHITE_SYMBOL) {
-                    std::cout << "w->b at " << translate(hex) << std::endl;
+                    //std::cout << "w->b at " << translate(hex) << std::endl;
                     board.set(hex, WHITE_TARGET_OF_BLACK_SYMBOL);
                 } else if (board[hex] == BLACK_SYMBOL) {
-                    std::cout << "b->b at " << translate(hex) << std::endl;
+                    //std::cout << "b->b at " << translate(hex) << std::endl;
                     board.set(hex, BLACK_TARGET_OF_BLACK_SYMBOL);
                 } else if (board[hex] == EMPTY_PLACE_SYMBOL) {
-                    std::cout << "breaking on _ at " << translate(hex) << std::endl;
-                    break;
+                    //std::cout << "breaking on _ at " << translate(hex) << std::endl;
+                    //break;
                 }
             }
 
         } else {
             //przecięcie
-            std::cout << "kolizja " << translate(hex) << std::endl;
+           // std::cout << "kolizja " << translate(hex) << std::endl;
             return true;
         }
     }
