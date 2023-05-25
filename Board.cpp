@@ -291,6 +291,8 @@ void Board::clear_board() {
             map[kv.first] = WHITE_SYMBOL;
         else if (map[kv.first] == BLACK_TARGET_OF_WHITE_SYMBOL || map[kv.first] == BLACK_TARGET_OF_BLACK_SYMBOL)
             map[kv.first] = BLACK_SYMBOL;
+        else if (map[kv.first] == USED_DOT_SYMBOL)
+            map[kv.first] = DOT_SYMBOL;
     }
 }
 

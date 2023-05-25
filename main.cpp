@@ -199,8 +199,13 @@ int main() {
                         //continue;
                     } else {
                         //std::cout << "OK\n";
-                        g = std::make_unique<GIPF>(init, next_player, v);
-                        std::cout << BOARD_LOAD_OK << std::endl;
+                        bool good_state = false;
+                        g = std::make_unique<GIPF>(init, next_player, v, good_state);
+
+                        if (good_state)
+                            std::cout << BOARD_LOAD_OK << std::endl;
+                        else
+                            g.reset();
                     }
                 }
 

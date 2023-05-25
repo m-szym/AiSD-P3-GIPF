@@ -38,7 +38,7 @@ public:
 public:
     GIPF(int size, int killing_number, int white_pieces, int black_pieces);
     GIPF(int size, int killing_number, int white_pieces, int black_pieces, int white_reserve, int black_reserve, char starting_player);
-    GIPF(int params[], char starting_player, std::vector<char> flat_board);
+    GIPF(int params[], char starting_player, std::vector<char> flat_board, bool &good_state);
 
     std::vector<Hex> read_move();
     bool read_details(const std::string& details, std::vector<Hex>& move);
@@ -59,7 +59,7 @@ public:
     void kill_targets(std::vector<std::vector<Hex>> &dotlines);
 
     void print_game_state() const;
-    void check_map() const;
+    bool check_map();
 };
 
 

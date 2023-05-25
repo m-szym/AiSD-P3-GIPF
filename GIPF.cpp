@@ -4,6 +4,8 @@
 
 #include "GIPF.h"
 
+#include <utility>
+
 GIPF::GIPF(int size, int killing_number, int white_pieces, int black_pieces)
     : hex_coords{}, coords_hex{}, board(size), size(size), killing_number(killing_number), base_white_pieces(white_pieces),
       base_black_pieces(black_pieces), prisoners_of_white(0), prisoners_of_black(0), white_reserve(0), black_reserve(0),
@@ -31,7 +33,7 @@ GIPF::GIPF(int size, int killing_number, int white_pieces, int black_pieces, int
     check_map();
 }
 
-GIPF::GIPF(int params[], char starting_player, std::vector<char> flat_board)
+GIPF::GIPF(int params[], char starting_player, std::vector<char> flat_board, bool &good_state)
         : board(params[0]) {
     size = params[0];
     killing_number = params[1];
@@ -43,15 +45,86 @@ GIPF::GIPF(int params[], char starting_player, std::vector<char> flat_board)
     next_player = (starting_player == WHITE_SYMBOL) ? BLACK_SYMBOL : WHITE_SYMBOL;
 
     board.construct_map(hex_coords, coords_hex);
-    board.new_read_map(flat_board);
+    board.new_read_map(std::move(flat_board));
+
+    good_state = check_map();
+    board.clear_board();
 
     //board.print_cont();
     //board.print_gipf();
 }
 
-void GIPF::check_map() const {
+bool GIPF::check_map() {
+    std::vector<std::vector<Hex>> dotlines;
+    for (auto kv : board.map) {
+        if (kv.second == DOT_SYMBOL) {
+            for (int i = 0; i < HEX_DIRECTIONS_COUNT; ++i) {
+                try {
+                    Hex negh = hex_neighbour(kv.first, i);
+                    if (board.map.at(negh) != DOT_SYMBOL) {
+                        auto line = board.get_fullline(kv.first, i);
+                        dotlines.push_back(line);
+//                        auto n = hex_neighbour(kv.first, i);
+//                        while (board.map.find(n) != board.map.end()) {
+//                            if (board.map.at(n) == DOT_SYMBOL) {
+//                                board.set(n, USED_DOT_SYMBOL);
+//                                break;
+//                            }
+//                            n = hex_neighbour(n, i);
+//                        }
+                    }
+                } catch (std::out_of_range& e) {
+                    continue;
+                }
+            }
+        }
+    }
 
+    int incorrect_rows = 0;
+    int white_row = 0;
+    int black_row = 0;
+    for (auto line : dotlines) {
+        white_row = 0;
+        black_row = 0;
+
+        for (auto hex : line) {
+            if (board[hex] == WHITE_SYMBOL) {
+                white_row++;
+                black_row = 0;
+            } else if (board[hex] == BLACK_SYMBOL) {
+                white_row = 0;
+                black_row++;
+            } else if (board[hex] == EMPTY_PLACE_SYMBOL) {
+                white_row = 0;
+                black_row = 0;
+            }
+
+            if (white_row >= killing_number || black_row >= killing_number) {
+                incorrect_rows++;
+                break;
+            }
+
+        }
+
+//        if (white_row >= killing_number || black_row >= killing_number) {
+//            incorrect_rows++;
+//        }
+    }
+
+    //std::cout << "incorrect rows: " << incorrect_rows << std::endl;
+    if (incorrect_rows == 0)
+        return true;
+
+    if (incorrect_rows == 2)
+        std::cout << "ERROR_FOUND_1_ROW_OF_LENGTH_K" << std::endl;
+    else
+        std::cout << "ERROR_FOUND_" << incorrect_rows/2 << "_ROWS_OF_LENGTH_K" << std::endl;
+    return false;
 }
+
+
+
+
 
 //teraz tylko wczytuje - nie sprawdza poprawności (poza translate)
 std::vector<Hex> GIPF::read_move() {
@@ -175,7 +248,7 @@ bool GIPF::is_valid_move_basic(std::vector<Hex> move) {
 void GIPF::simple_move() {
     auto move = read_move();
     make_move(move);
-    //evaluate_turn(move);
+    evaluate_turn(move);
 }
 
 bool GIPF::mark_target_line(const std::vector<Hex>& line) {
@@ -240,7 +313,9 @@ bool GIPF::mark_target_line(const std::vector<Hex>& line) {
                     board.set(hex, WHITE_TARGET_OF_WHITE_SYMBOL);
                 } else if (board[hex] == EMPTY_PLACE_SYMBOL){
                     //board.set(hex, EMPTY_TARGET_SYMBOL);
-                    std::cout << "_->_ at " << translate(hex) << std::endl;
+                    //std::cout << "_->_ at " << translate(hex) << std::endl;
+                    std::cout << "breaking on _ at " << translate(hex) << std::endl;
+                    break;
                 } else {
                     std::cout << "error char at " << translate(hex) << " == " << board[hex] << std::endl;
                 }
@@ -251,6 +326,9 @@ bool GIPF::mark_target_line(const std::vector<Hex>& line) {
                 } else if (board[hex] == BLACK_SYMBOL) {
                     std::cout << "b->b at " << translate(hex) << std::endl;
                     board.set(hex, BLACK_TARGET_OF_BLACK_SYMBOL);
+                } else if (board[hex] == EMPTY_PLACE_SYMBOL) {
+                    std::cout << "breaking on _ at " << translate(hex) << std::endl;
+                    break;
                 }
             }
 
@@ -318,7 +396,7 @@ Hex GIPF::translate(const std::string &coords) {
 
 void GIPF::evaluate_turn(const std::vector<Hex> &last_move) {
     bool special_move = last_move.size() > 2;
-    board.print_cont();
+    //board.print_cont();
     auto dotlines = board.get_dotlines();
     if (dotlines.empty()) {
         std::cout << "no dotlines" << std::endl;
@@ -369,9 +447,9 @@ void GIPF::evaluate_turn(const std::vector<Hex> &last_move) {
     }
     //std::cout << "v=" << v << "_of_i=" << i << "_" << std::endl;
 
-    board.print_cont();
+    //board.print_cont();
     kill_targets(dotlines);
-    board.print_cont();
+    //board.print_cont();
     board.clear_board();
 }
 
