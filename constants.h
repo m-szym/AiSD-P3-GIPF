@@ -7,7 +7,7 @@
 
 const std::string SPACER = " ";
 const int GIPF_INDEX_START_INT = 1;
-const char GIPF_INDEX_START_CHAR = 'A';
+const char GIPF_INDEX_START_CHAR = 'a';
 
 
 const char EMPTY_PLACE_SYMBOL = '_';

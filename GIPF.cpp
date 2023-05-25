@@ -31,108 +31,143 @@ GIPF::GIPF(int size, int killing_number, int white_pieces, int black_pieces, int
     check_map();
 }
 
+GIPF::GIPF(int params[], char starting_player, std::vector<char> flat_board)
+        : board(params[0]) {
+    size = params[0];
+    killing_number = params[1];
+    base_white_pieces = params[2];
+    base_black_pieces = params[3];
+    white_reserve = params[4];
+    black_reserve = params[5];
+    current_player = starting_player;
+    next_player = (starting_player == WHITE_SYMBOL) ? BLACK_SYMBOL : WHITE_SYMBOL;
+
+    board.construct_map(hex_coords, coords_hex);
+    board.new_read_map(flat_board);
+
+    //board.print_cont();
+    //board.print_gipf();
+}
 
 void GIPF::check_map() const {
 
 }
 
+//teraz tylko wczytuje - nie sprawdza poprawności (poza translate)
 std::vector<Hex> GIPF::read_move() {
     std::string dot_position;
     std::string entry_position;
 
-    //std::getline(std::cin, dot_position, ' ');
-    std::cin >> dot_position;
-    if (dot_position.length() == 2) {
-        //std::cout << "d-" << dot_position << "+";
+    std::string i;
+    std::cin >> i;
+    dot_position = i.substr(0, 2);
+    char dash = i[2];
+    entry_position = i.substr(3, 2);
+//    std::cin >> dot_position;
+//    int dash = getchar();
+//    std::cin >> entry_position;
 
-        if (getchar() == '-') {
-            //std::cout << "_-_";
-            //std::getline(std::cin, entry_position);
-            std::cin >> entry_position;
-            if (entry_position.length() == 2) {
-                //std::cout << "e-" << entry_position << "+" << std::endl;
-
-                try {
-                    //Hex dot = board.key_map.at(dot_position);
-                    Hex dot = translate(dot_position);
-
-                    //dot.print();
-                    //std::cout << (char) board[dot] << std::endl;
-                    try {
-                        //Hex entry = board.key_map.at(entry_position);
-                        Hex entry = translate(entry_position);
-                        entry.print();
-                        std::cout << (char) board[entry] << std::endl;
-
-                        std::vector move = {dot, entry};
-                        std::string details;
-                        std::getline(std::cin, details);
-                        std::cout << "d=" << details << "|" << std::endl;
-                        if (details.length() > 0) {
-                            if (read_details(details, move)) {
-                                for (auto hex : move) {
-                                    std::cout << (char) board[hex] << std::endl;
-                                }
-                                return move;
-                            } else {
-                                std::cout << BAD_COMMAND_ERROR << std::endl;
-                                return std::vector({EMPTY_HEX, EMPTY_HEX});
-                            }
-                        } else {
-                            return move;
-                        }
-                    } catch (std::out_of_range& e) {
-                        //std::cout << BAD_COORDINATES_ERROR << std::endl;
-                        return std::vector({EMPTY_HEX, EMPTY_HEX});
-                    }
-                } catch (std::out_of_range& e) {
-                    //std::cout << BAD_COORDINATES_ERROR << std::endl;
-                    std::cout << "BAD_MOVE_" <<
+    if (dot_position.length() == 2 && entry_position.length() == 2 && dash == '-') {
+        try {
+            Hex dot = translate(dot_position);                              //ewntualnie sprawdzic czy nie EMPTY_HEX
+            if (dot == EMPTY_HEX) {
+                std::cout << "BAD_MOVE_" << dot_position << "_IS_WRONG_INDEX" << std::endl;
+                return std::vector({EMPTY_HEX, EMPTY_HEX});
+            }
+            try {
+                Hex entry = translate(entry_position);
+                if (entry == EMPTY_HEX) {
+                    std::cout << "BAD_MOVE_" << entry_position << "_IS_WRONG_INDEX" << std::endl;
                     return std::vector({EMPTY_HEX, EMPTY_HEX});
                 }
+
+                std::vector move = {dot, entry};
+
+                std::string details;
+                std::getline(std::cin, details);
+                if (details.length() > 0) {
+                    if (read_details(details, move)) {
+//                        do debugowania
+//                        for (auto hex : move) {
+//                            std::cout << (char) board[hex] << std::endl;
+//                        }
+                        return move;
+                    } else {
+                        std::cout << BAD_COMMAND_ERROR << "=" << details << "|" << std::endl;
+                        return std::vector({EMPTY_HEX, EMPTY_HEX});
+                    }
+                } else {
+                    return move;
+                }
+            } catch (std::out_of_range& e) {
+                std::cout << "BAD_MOVE_" << entry_position << "_IS_WRONG_INDEX" << std::endl;
+                return std::vector({EMPTY_HEX, EMPTY_HEX});
             }
+        } catch (std::out_of_range& e) {
+            std::cout << "BAD_MOVE_" << dot_position << "_IS_WRONG_INDEX" << std::endl;
+            return std::vector({EMPTY_HEX, EMPTY_HEX});
         }
     }
 
-    std::cout << BAD_COMMAND_FORMAT_ERROR << std::endl;
+    std::cout << BAD_COMMAND_FORMAT_ERROR << "dot=" << dot_position << "| dash=" << (char) dash << "| entry=" << entry_position << "|" << std::endl;
     return std::vector({EMPTY_HEX, EMPTY_HEX});
 }
 
 
 
 void GIPF::make_move(std::vector<Hex> move) {
-    if (move[0] == EMPTY_HEX || move[1] == EMPTY_HEX) {
+    if (!is_valid_move_basic(move)) {
+        //std::cout << BAD_MOVE_ERROR << std::endl;
         return;
     }
 
-    //board.set(move[0], current_player);
-
-    if (is_valid_move_basic(move)) {
-        int dir = move[0].neighbour_direction(move[1]);
-        auto path = board.get_fullline(move[0], dir);
-        if (board.line_has_empty_hex(path)) {
-            board.push_line(path, current_player);
-        }
-    } else {
-        std::cout << BAD_MOVE_ERROR << std::endl;
+    int dir = move[0].neighbour_direction(move[1]);
+    if (dir < 0 || dir >= HEX_DIRECTIONS_COUNT) {
+        std::cout << "UNKNOWN_MOVE_DIRECTION" << std::endl;
         return;
     }
+    auto path = board.get_fullline(move[0], dir);
+    if (!board.line_has_empty_hex(path)) {
+        std::cout << "BAD_MOVE_ROW_IS_FULL" << std::endl;
+        return;
+    }
+    board.push_line(path, current_player);
+    //std::cout << "\t" << current_player << "inserted at " << translate(path.front()) << std::endl;
+    if (current_player == WHITE_SYMBOL) white_reserve--;
+    else black_reserve--;
+    std::cout << "MOVE_COMMITTED" << std::endl;
 
     //board.set(move[0], DOT_SYMBOL);
     next_player = (next_player == WHITE_SYMBOL) ? BLACK_SYMBOL : WHITE_SYMBOL;
+    current_player = (current_player == WHITE_SYMBOL) ? BLACK_SYMBOL : WHITE_SYMBOL;
 
 }
 
 bool GIPF::is_valid_move_basic(std::vector<Hex> move) {
-    if (move[0] == EMPTY_HEX || move[1] == EMPTY_HEX) {
+    if (move[0] == EMPTY_HEX) {
+        //std::cout << "BAD_MOVE_" << translate(move[0]) << "_IS_WRONG_INDEX" << std::endl;
+        return false;
+    }
+
+    if (move[1] == EMPTY_HEX) {
+        //std::cout << "BAD_MOVE_" << translate(move[1]) << "_IS_WRONG_INDEX" << std::endl;
         return false;
     }
 
     if (move[0].distance(move[1]) != 1) {
+        std::cout << "UNKNOWN_MOVE_DIRECTION" << std::endl;
         return false;
     }
 
+    if (board[move[0]] != DOT_SYMBOL) {
+        std::cout << "BAD_MOVE_" << translate(move[0]) << "_IS_WRONG_STARTING_FIELD" << std::endl;
+        return false;
+    }
 
+    if (board[move[1]] != WHITE_SYMBOL && board[move[1]] != BLACK_SYMBOL && board[move[1]] != EMPTY_PLACE_SYMBOL) {
+        std::cout << "BAD_MOVE_" << translate(move[1]) << "_IS_WRONG_DESTINATION_FIELD" << std::endl;
+        return false;
+    }
 
     return true;
 }
@@ -140,7 +175,7 @@ bool GIPF::is_valid_move_basic(std::vector<Hex> move) {
 void GIPF::simple_move() {
     auto move = read_move();
     make_move(move);
-    evaluate_turn(move);
+    //evaluate_turn(move);
 }
 
 bool GIPF::mark_target_line(const std::vector<Hex>& line) {
@@ -229,11 +264,6 @@ bool GIPF::mark_target_line(const std::vector<Hex>& line) {
 }
 
 bool GIPF::read_details(const std::string& details, std::vector<Hex>& move) {
-
-//    std::istringstream iss(details);
-//    std::vector<std::string> tokens(std::istream_iterator<std::string>{iss},
-//                                     std::istream_iterator<std::string>());
-
     std::vector<std::string> tokens = split_string(details);
 
     if(tokens.empty()) {    //chyba ok
@@ -274,7 +304,7 @@ std::string GIPF::translate(const Hex &hex) {
     try {
         return hex_coords.at(hex);
     } catch (std::out_of_range& e) {
-        return "";
+        return "XXX";
     }
 }
 
@@ -371,22 +401,12 @@ void GIPF::print_game_state() const {
     std::cout << size << " " << killing_number << " " << base_white_pieces << " " << base_black_pieces << std::endl;
     std::cout << white_reserve << " " << black_reserve << " " << current_player << std::endl;
     board.print_gipf();
+//    std::cout<< std::endl;
+//    board.print_cont();
+//    std::cout<< std::endl;
+//    board.print_xN();
+//    std::cout<< std::endl;
 }
 
-GIPF::GIPF(int params[], char starting_player, std::vector<char> flat_board)
-    : board(params[0]) {
-    size = params[0];
-    killing_number = params[1];
-    base_white_pieces = params[2];
-    base_black_pieces = params[3];
-    white_reserve = params[4];
-    black_reserve = params[5];
-    current_player = starting_player;
 
-    board.construct_map(hex_coords, coords_hex);
-    board.new_read_map(flat_board);
-
-    //board.print_cont();
-    //board.print_gipf();
-}
 

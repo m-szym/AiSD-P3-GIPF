@@ -208,11 +208,19 @@ int main() {
                 //g = std::make_unique<GIPF>(size, killig_number, white_pieces, black_pieces, white_reserve, black_reserve, next_player);
 
             }
+            std::cout << std::endl;
         }
         else if (input == "DO_MOVE") {
             if (g == nullptr) continue;
 
             g->simple_move();
+            std::cout << std::endl;
+        }
+        else if (input == "PRINT_GAME_BOARD") {
+            if (g == nullptr) continue;
+
+            g->print_game_state();
+            std::cout << std::endl;
         }
 
         if (std::cin.eof()) break;
@@ -222,5 +230,16 @@ int main() {
 
     return 0;
 }
+
+//Jeden z poniższych stringów:
+//
+//MOVE_COMMITTED - ruch poprawny, zatwierdzono zmiany na planszy i zmieniono aktualnego gracza.
+//BAD_MOVE_<x1>_IS_WRONG_INDEX - zły indeks, pokazuje na pole spoza planszy. W przypadku kiedy podano więcej niż jeden zły indeks, drukowany jest tylko pierwszy napotkany.
+//UNKNOWN_MOVE_DIRECTION - nie można określić kierunku ruchu.
+//BAD_MOVE_<x1>_IS_WRONG_STARTING_FIELD - wybrano złe, pole startowe (powinno to być jedno z położonych na obrzeżach planszy)
+//BAD_MOVE_<x2>_IS_WRONG_DESTINATION_FIELD - wybrano złe, pole docelowe (powinno to być pole wolne albo zawierające pion któregoś z graczy)
+//BAD_MOVE_ROW_IS_FULL - nie można wykonać ruchu bo wiersz jest zapełniony.
+//W odpowiedzi na PRINT_GAME_BOARD drukowana jest zawartość planszy o identycznym układzie jak ten z instrukcji LOAD_GAME_BOARD.
+
 
 

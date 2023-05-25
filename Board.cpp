@@ -19,7 +19,7 @@ void Board::construct_map(std::unordered_map<Hex, std::string> &hex_coords,
         int r2 = std::min(size, -q + size);
         for (int r = r1; r <= r2; r++) {
             Hex h(q, r);
-            std::string coords = std::to_string(x) + std::string(1, N);
+            std::string coords = std::string(1, N) + std::to_string(x);
             hex_coords.emplace(h, coords);
             coords_hex.emplace(coords, h);
 
@@ -55,7 +55,7 @@ void Board::print_xN() const
     int n = playing_field_size;
 
     int x = 1;
-    char N = 'A';
+    char N = 'a';
 
     for (int q = -n; q <= n; q++) {
         int r1 = std::max(-n, -q - n);
@@ -66,7 +66,7 @@ void Board::print_xN() const
         for (int r = r1; r <= r2; r++) {
             //std::cout << "__  ";
             //std::cout << (char) (map.at(Hex(q, r)) + 60) << " ";
-            std::cout << std::to_string(x) + std::string(1, N)<< "  ";
+            std::cout << std::string(1, N) + std::to_string(x)<< "  ";
             //int f = map.at(Hex(q, r));
 
 //            std::cout << f << "  ";
@@ -119,12 +119,15 @@ void Board::print_gipf() const {
         int r1 = std::max(-n, -q - n);
         int r2 = std::min(n, -q + n);
 
+        if (q == -n || q == n) continue;
+
         for (int i = -n; i < n - r2 + r1; i++) {
             std::cout << SPACER;
         }
 
         for (int r = r1; r <= r2; r++) {
-            Hex rh = rotate_right(Hex(q, r));
+            //Hex rh = rotate_right(Hex(q, r));
+            Hex rh = rotate_left(Hex(q, r));
             if (map.at(rh) == DOT_SYMBOL)
                 continue;
             else
@@ -171,7 +174,7 @@ void Board::new_read_map(std::vector<char> flat_board) {
         int r1 = std::max(-n, -q - n);
         int r2 = std::min( n, -q + n);
         for (int r = r1; r <= r2; r++) {
-            map[rotate_right(Hex(q, r))] = *it;
+            map[rotate_left(Hex(q, r))] = *it;
             it++;
         }
     }
@@ -224,26 +227,14 @@ bool Board::line_has_empty_hex(const std::vector<Hex>& line) {
 }
 
 void Board::push_line(std::vector<Hex> line, char value) {
-//    for (Hex hex : line) {
-//        hex.print();
-//    }
-
-    //auto it = line.end() - 1;
     auto it = std::find_if(line.begin(), line.end(), [this](Hex hex) { return map.at(hex) == EMPTY_PLACE_SYMBOL; });
-    //auto prev = line.end() - 2;
     auto prev = it - 1;
-    char tmp = map.at(*prev);
 
     while (it != line.begin()) {
         if (map.at(*it) == EMPTY_PLACE_SYMBOL) {
             map[*it] = map[*prev];
             map[*prev] = EMPTY_PLACE_SYMBOL;
-
-
         }
-
-        //print_cont();
-
         it--;
         prev--;
     }
