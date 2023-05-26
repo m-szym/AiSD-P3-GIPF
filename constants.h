@@ -28,6 +28,8 @@ const std::string BAD_COMMAND_FORMAT_ERROR = "illegal command format";
 const std::string BAD_COMMAND_ERROR = "illegal command";
 
 const std::string LOAD_BOARD_COMMAND = "LOAD_GAME_BOARD";
+const std::string DO_MOVE_COMMAND = "DO_MOVE";
+const std::string PRINT_GAME_COMMAND = "PRINT_GAME_BOARD";
 
 const std::string INVALID_BOARD_WHITE_PIECES_ERROR = "WRONG_WHITE_PAWNS_NUMBER";
 const std::string INVALID_BOARD_BLACK_PIECES_ERROR = "WRONG_BLACK_PAWNS_NUMBER";

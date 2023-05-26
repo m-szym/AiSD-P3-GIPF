@@ -29,7 +29,7 @@ int Hex::length() const {
     return int((abs(iq) + abs(ir) + abs(s())) / 2);
 }
 
-Hex Hex::hex_direction(int direction) const {
+Hex Hex::hex_direction(int direction) {
     return hex_directions[direction];
 }
 
@@ -99,9 +99,9 @@ Hex hex_neighbour(const Hex &hex, int direction) {
 }
 
 Hex rotate_right(const Hex &hex) {
-    return Hex(-hex.r(), -hex.s(), -hex.q());
+    return {-hex.r(), -hex.s(), -hex.q()};
 }
 
 Hex rotate_left(const Hex &hex) {
-    return Hex(-hex.s(), -hex.q(), -hex.r());
+    return {-hex.s(), -hex.q(), -hex.r()};
 }

@@ -39,10 +39,6 @@ void Board::find_dots() {
             try {
                 map.at(kv.first.hex_neighbour(i));
             } catch (std::out_of_range& e) {
-                //jeśli wchodzimy w to miejsce to ten hex jest krawędziowy (kropka w GIPFie)
-
-                //std::cout << "cought\n";
-                //kv.second += 1000;
                 map[kv.first] = DOT_SYMBOL;
                 break;
             }
@@ -126,14 +122,11 @@ void Board::print_gipf() const {
         }
 
         for (int r = r1; r <= r2; r++) {
-            //Hex rh = rotate_right(Hex(q, r));
-            Hex rh = rotate_left(Hex(q, r));
-            if (map.at(rh) == DOT_SYMBOL)
+            Hex left_rotated = rotate_left(Hex(q, r));
+            if (map.at(left_rotated) == DOT_SYMBOL)
                 continue;
             else
-                std::cout << (char) map.at(rh) << SPACER;
-
-            //std::cout << (char) map.at(rotate_left(Hex(q, r))) << SPACER;
+                std::cout << (char) map.at(left_rotated) << SPACER;
         }
         std::cout << std::endl;
     }
@@ -167,7 +160,6 @@ void Board::read_map() {
 
 void Board::new_read_map(std::vector<char> flat_board) {
     int n = playing_field_size - 1;
-    int c = ' ';
 
     auto it = flat_board.begin();
     for (int q = -n; q <= n; q++) {
@@ -191,21 +183,6 @@ std::vector<Hex> Board::get_fullline(Hex starting_hex, int direction) {
     return line;
 }
 
-std::vector<Hex> Board::get_wline(Hex starting_hex, int direction) {
-    std::vector<Hex> line;
-    Hex current_hex = starting_hex;
-    while (map.find(current_hex) != map.end()) {
-        if (map.at(current_hex) != DOT_SYMBOL)
-            if (map.at(current_hex) != EMPTY_PLACE_SYMBOL) {
-                line.push_back(current_hex);
-            } else {
-                break;
-            }
-        current_hex = current_hex.hex_neighbour(direction);
-    }
-    return line;
-}
-
 char Board::set(Hex hex, char value) {
     try {
         char old_value = map.at(hex);
@@ -213,7 +190,7 @@ char Board::set(Hex hex, char value) {
         return old_value;
     } catch (std::out_of_range& e) {
         std::cout << "Out of range: " << e.what() << std::endl;
-        return 0;
+        return ERROR_SYMBOL;
     }
 }
 
@@ -226,7 +203,8 @@ bool Board::line_has_empty_hex(const std::vector<Hex>& line) {
 }
 
 void Board::push_line(std::vector<Hex> line, char value) {
-    auto it = std::find_if(line.begin(), line.end(), [this](Hex hex) { return map.at(hex) == EMPTY_PLACE_SYMBOL; });
+    auto it = std::find_if(line.begin(), line.end(),
+                           [this](Hex hex) { return map.at(hex) == EMPTY_PLACE_SYMBOL; });
     auto prev = it - 1;
 
     while (it != line.begin()) {
@@ -259,27 +237,26 @@ bool Board::line_was_visited(const std::vector<Hex> &line) const {
 
 std::vector<std::vector<Hex>> Board::get_dotlines() {
     std::vector<std::vector<Hex>> dotlines;
+
     for (auto kv : map) {
         if (kv.second == DOT_SYMBOL) {
             map[kv.first] = USED_DOT_SYMBOL;
+
             for (int i = 0; i < HEX_DIRECTIONS_COUNT; ++i) {
                 try {
-                    if (map.at(hex_neighbour(kv.first, i)) != DOT_SYMBOL && map.at(hex_neighbour(kv.first, i)) != USED_DOT_SYMBOL) {
-                        bool valid = false;
-                        auto n = hex_neighbour(kv.first, i);
-                        while (map.find(n) != map.end()) {
-                            if (map.at(n) == DOT_SYMBOL) {
-                                //set(n, USED_DOT_SYMBOL);
-                                valid = true;
+                    if (map.at(hex_neighbour(kv.first, i)) != DOT_SYMBOL &&
+                        map.at(hex_neighbour(kv.first, i)) != USED_DOT_SYMBOL) {
+                        bool unvisited = false;
+                        auto neighbour = hex_neighbour(kv.first, i);
+                        while (map.find(neighbour) != map.end()) {
+                            if (map.at(neighbour) == DOT_SYMBOL) {
+                                unvisited = true;
                                 break;
                             }
-                            n = hex_neighbour(n, i);
+                            neighbour = hex_neighbour(neighbour, i);
                         }
 
-                        if (valid) {
-                            auto line = get_fullline(kv.first, i);
-                            dotlines.push_back(line);
-                        }
+                        if (unvisited) dotlines.push_back(get_fullline(kv.first, i));
                     }
                 } catch (std::out_of_range& e) {
                     continue;

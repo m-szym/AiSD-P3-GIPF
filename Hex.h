@@ -23,24 +23,16 @@ enum DIRS {
 
 class Hex {
 private:
-
     int iq, ir;
 
 public:
-//    Hex(const Hex& other);
-//    Hex operator=(const Hex& other) {
-//        iq = other.q();
-//        ir = other.r();
-//        is = other.s();
-//        return *this;
-//    }
     Hex(int q, int r);
     Hex(int q, int r, int s);   //TODO: throw exeption if s != -q - r
 
     int distance(const Hex& other) const;
     int length() const;
 
-    Hex hex_direction(int direction) const;
+    static Hex hex_direction(int direction) ;
     Hex hex_neighbour(int direction) const;
     int neighbour_direction(const Hex& neighbour) const;
 
