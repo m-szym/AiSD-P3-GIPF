@@ -111,6 +111,8 @@ int main() {
     std::unique_ptr<GIPF> g = nullptr;
     //std::cout << "\n";
     while (std::cin) {
+        if (std::cin.eof()) break;
+        input = "";
         std::cin >> input;
 
         if (input == "exit")
@@ -228,7 +230,7 @@ int main() {
             std::cout << std::endl;
         }
 
-        if (std::cin.eof()) break;
+
 //        if (g != nullptr)
 //            g->print_game_state();
     }

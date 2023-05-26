@@ -60,6 +60,8 @@ public:
 
     void print_game_state() const;
     bool check_map();
+
+    void print_coords();
 };
 
 
