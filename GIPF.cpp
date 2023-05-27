@@ -38,6 +38,13 @@ GIPF::GIPF(int params[], char starting_player, std::vector<char> flat_board, boo
     board.clear_board();
 }
 
+GIPF::GIPF(const GIPF &other)
+        : board(other.board), size(other.size), killing_number(other.killing_number), base_white_pieces(other.base_white_pieces),
+          base_black_pieces(other.base_black_pieces), prisoners_of_white(other.prisoners_of_white), prisoners_of_black(other.prisoners_of_black),
+          white_reserve(other.white_reserve), black_reserve(other.black_reserve), current_player(other.current_player), next_player(other.next_player),
+          coords_hex(other.coords_hex), hex_coords(other.hex_coords)
+{}
+
 bool GIPF::check_map() {
     auto dotlines = board.get_dotlines();
     int incorrect_rows = 0;
@@ -77,7 +84,7 @@ bool GIPF::check_map() {
 }
 
 
-std::vector<Hex> GIPF::read_move() {
+std::pair<std::vector<Hex>, char> GIPF::read_move() {
     std::string raw_command;
     std::cin >> raw_command;
 
@@ -90,50 +97,55 @@ std::vector<Hex> GIPF::read_move() {
         Hex entry = translate(entry_position);
         if (dot == EMPTY_HEX) {
             std::cout << "BAD_MOVE_" << dot_position << "_IS_WRONG_INDEX" << std::endl;
-            return std::vector({EMPTY_HEX, EMPTY_HEX});
+            return {{EMPTY_HEX}, DOT_SYMBOL};
         }
         if (entry == EMPTY_HEX) {
             std::cout << "BAD_MOVE_" << entry_position << "_IS_WRONG_INDEX" << std::endl;
-            return std::vector({EMPTY_HEX, EMPTY_HEX});
+            return {{EMPTY_HEX}, DOT_SYMBOL};
         }
 
         std::vector move = {dot, entry};
+        char player = DOT_SYMBOL;
 
         std::string details;
         std::getline(std::cin, details);
         if (details.length() > 0) {
-            if (read_move_details(details, move)) {
-//                do debugowania
-//                for (auto hex : move) {
-//                    std::cout << (char) board[hex] << std::endl;
-//                }
-                return move;
+            if (read_move_details(details, move, player)) {
+                if(move.size() == 4) {
+                    return {move, player};
+                }
             } else {
-                //std::cout << BAD_COMMAND_ERROR << "=" << details << "|" << std::endl;
-                return std::vector({EMPTY_HEX, EMPTY_HEX});
+                std::cout << BAD_COMMAND_ERROR << " details ==" << details << "|" << std::endl;
+                return {{EMPTY_HEX}, DOT_SYMBOL};
             }
         } else {
-            return move;
+            return {move, player};
         }
     }
 
     //std::cout << BAD_COMMAND_FORMAT_ERROR << "dot=" << dot_position << "| dash=" << (char) dash << "| entry=" << entry_position << "|" << std::endl;
-    return std::vector({EMPTY_HEX, EMPTY_HEX});
+    return {{EMPTY_HEX}, DOT_SYMBOL};
 }
 
-bool GIPF::read_move_details(const std::string& details, std::vector<Hex>& move) {
+bool GIPF::read_move_details(const std::string &details, std::vector<Hex> &move, char &killer) {
     std::vector<std::string> fragments = split_string(details);
 
     if(fragments.empty()) {
         return true;
     }
 
+    if(fragments.size() != 3) {
+        return false;
+    }
+
     if (fragments[0].size() != 2) {
         return false;
     }
 
+    std::vector<Hex> tmp;
     if(fragments[0] == "b:" || fragments[0] == "w:") {
-        //std::cout << fragments[0] << std::endl;
+        killer = (fragments[0] == "w:") ? WHITE_SYMBOL : BLACK_SYMBOL;
+
         auto it = fragments.begin() + 1;
         while (it != fragments.end()) {
             Hex hex = translate(*it);
@@ -142,34 +154,35 @@ bool GIPF::read_move_details(const std::string& details, std::vector<Hex>& move)
                 return false;
             } else {
                 if (board[hex] != DOT_SYMBOL) {
-                    move.push_back(hex);
+                    tmp.push_back(hex);
                 } else {
                     return false;
                 }
             }
             it++;
         }
+        move.insert(move.end(), tmp.begin(), tmp.end());
         return true;
+    } else {
+        return false;
     }
-
-    return false;
 }
 
-void GIPF::make_move(std::vector<Hex> move) {
-    if (!is_valid_move_basic(move)) {
-        return;
+bool GIPF::make_move(const std::pair<std::vector<Hex>, char>& move) {
+    if (!is_valid_move_basic(move.first)) {
+        return false;
     }
 
-    int dir = move[0].neighbour_direction(move[1]);
+    int dir = move.first[0].neighbour_direction(move.first[1]);
     if (dir < 0 || dir >= HEX_DIRECTIONS_COUNT) {
         std::cout << "UNKNOWN_MOVE_DIRECTION" << std::endl;
-        return;
+        return false;
     }
 
-    auto line = board.get_fullline(move[0], dir);
+    auto line = board.get_fullline(move.first[0], dir);
     if (!board.line_has_empty_hex(line)) {
         std::cout << "BAD_MOVE_ROW_IS_FULL" << std::endl;
-        return;
+        return false;
     }
 
     std::cout << "MOVE_COMMITTED" << std::endl;
@@ -181,6 +194,7 @@ void GIPF::make_move(std::vector<Hex> move) {
 
     next_player = (next_player == WHITE_SYMBOL) ? BLACK_SYMBOL : WHITE_SYMBOL;
     current_player = (current_player == WHITE_SYMBOL) ? BLACK_SYMBOL : WHITE_SYMBOL;
+    return true;
 }
 
 bool GIPF::is_valid_move_basic(std::vector<Hex> move) {
@@ -206,10 +220,11 @@ bool GIPF::is_valid_move_basic(std::vector<Hex> move) {
     return true;
 }
 
-void GIPF::simple_move() {
+bool GIPF::simple_move() {
     auto move = read_move();
-    make_move(move);
-    evaluate_turn(move);
+    if(!make_move(move))
+        return false;
+    return evaluate_turn(move);
 }
 
 
@@ -344,13 +359,15 @@ bool GIPF::mark_target_line(const std::vector<Hex>& line) {
     return false;
 }
 
-void GIPF::evaluate_turn(const std::vector<Hex> &last_move) {
-    bool special_move = last_move.size() > 2;
-    //board.print_cont();
+bool GIPF::evaluate_turn(const std::pair<std::vector<Hex>, char> &last_move) {
+    auto move_hexes = last_move.first;
+    char player = last_move.second;
+    bool special_move = ((move_hexes.size() == 4) && (player == WHITE_SYMBOL || player == BLACK_SYMBOL));
+
     auto dotlines = board.get_dotlines();
     if (dotlines.empty()) {
         std::cout << "no dotlines" << std::endl;
-        return;
+        return false;
     }
 //    for (auto line : dotlines) {
 //        std::cout << "line: " << translate(line.front()) << " --> " << translate(line.back()) << std::endl;
@@ -359,25 +376,35 @@ void GIPF::evaluate_turn(const std::vector<Hex> &last_move) {
     //std::cout << "dotlines: " << dotlines.size() << std::endl;
     if (special_move) {
         std::cout << "special move" << std::endl;
-        auto it = last_move.begin() + 2;
-        while (it != last_move.end()) {
-            if (current_player == WHITE_SYMBOL) {
-                if (board[*it] == BLACK_SYMBOL) {
-                    white_reserve++;
-                } else if (board[*it] == BLACK_SYMBOL) {
-                    prisoners_of_white++;
-                }
-                board.set(*it, EMPTY_PLACE_SYMBOL);
-            } else if (current_player == BLACK_SYMBOL) {
-                if (board[*it] == BLACK_SYMBOL) {
-                    black_reserve++;
-                } else if (board[*it] == WHITE_SYMBOL) {
-                    prisoners_of_black++;
-                }
-                board.set(*it, EMPTY_PLACE_SYMBOL);
+        Hex start = move_hexes[2];
+        Hex end = move_hexes[3];
+        std::cout << "start = " << translate(start) << " end = " << translate(end) << std::endl;
+        auto special_line = board.simple_get_line(start, end);
+        print_line(special_line);
+        auto it = special_line.begin();
+
+        while (it != special_line.end()) {
+            if (board[*it] == WHITE_SYMBOL) {
+                if (player == WHITE_SYMBOL)
+                    board.set(*it, WHITE_TARGET_OF_WHITE_SYMBOL);
+                else if (player == BLACK_SYMBOL)
+                    board.set(*it, WHITE_TARGET_OF_BLACK_SYMBOL);
+
+            } else if (board[*it] == BLACK_SYMBOL) {
+                if (player == WHITE_SYMBOL)
+                    board.set(*it, BLACK_TARGET_OF_WHITE_SYMBOL);
+                else if (player == BLACK_SYMBOL)
+                    board.set(*it, BLACK_TARGET_OF_BLACK_SYMBOL);
             }
+//            } else if (board[*it] == EMPTY_PLACE_SYMBOL) {
+//                board.set(*it, '3');
+//            }
             it++;
         }
+    } else {
+        std::cout << "special move ERROR" << "p: " << player << " s: " << move_hexes.size();
+        std::cout << " start: " << translate(move_hexes[2]) << " end: " << translate(move_hexes[3]) << std::endl;
+        return false;
     }
 
     int i = 0;
@@ -395,23 +422,24 @@ void GIPF::evaluate_turn(const std::vector<Hex> &last_move) {
 //        }
         if(mark_target_line(line)) {
             std::cout << "kolizja" << std::endl;
-            break;
+            return false;   //TODO czy to jest ok?
         }
         //std::cout << "checking line " << i << std::endl;
         i++;
     }
     //std::cout << "v=" << v << "_of_i=" << i << "_" << std::endl;
 
-//    std::cout << "\n\tcoords" << std::endl;
-//    print_coords();
-//    std::cout << "\n\ttargets acquired" << std::endl;
-//    board.print_gipf();
+    std::cout << "\n\tcoords" << std::endl;
+    print_coords();
+    std::cout << "\n\ttargets acquired" << std::endl;
+    board.print_gipf();
 //    std::cout << "\n\ttargets killed" << std::endl;
     kill_targets();
 //    board.print_gipf();
 //    std::cout << "\n\ttargets cleared" << std::endl;
     board.clear_board();
     //board.print_gipf();
+    return true;
 }
 
 void GIPF::kill_targets() {
@@ -479,6 +507,23 @@ void GIPF::print_coords() const {
         std::cout << std::endl;
     }
 }
+
+void GIPF::print_line(const std::vector<Hex> &line) const {
+    std::cout << "line: " << translate(line.front()) << " --> " << translate(line.back()) << std::endl;
+    std::cout << "\t";
+    for (const Hex& hex : line) {
+        std::cout << translate(hex);
+        if (hex != line.back())
+            std::cout << " --> ";
+    }
+    std::cout << std::endl;
+}
+
+std::string GIPF::check_state() {
+    return std::string();
+}
+
+
 
 
 

@@ -44,6 +44,8 @@ public:
         std::cout << "q: " << iq << " r: " << ir << " s: " << s() << std::endl;
     }
 
+
+
 };
 
 bool operator==(const Hex& first, const Hex& second);
@@ -51,6 +53,8 @@ bool operator!=(const Hex& first, const Hex& second);
 Hex operator+(const Hex& first, const Hex& second);
 Hex operator-(const Hex& first, const Hex& second);
 Hex operator*(const Hex& first, int k);
+
+
 //Hex operator<=>(const Hex& first, const Hex& second);
 
 int length(const Hex& hex);

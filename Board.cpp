@@ -8,6 +8,13 @@ Board::Board(int size)
     : real_size(size + 1), playing_field_size(size), map{}
 {}
 
+Board::Board(const Board &other)
+    : real_size(other.real_size), playing_field_size(other.playing_field_size) {
+    for (auto kv : other.map) {
+        map.emplace(kv.first, kv.second);
+    }
+}
+
 void Board::construct_map(std::unordered_map<Hex, std::string> &hex_coords,
                           std::unordered_map<std::string, Hex> &coords_hex) {
     int size = playing_field_size;
@@ -277,6 +284,27 @@ void Board::clear_board() {
             map[kv.first] = DOT_SYMBOL;
     }
 }
+
+std::vector<Hex> Board::simple_get_line(Hex starting_hex, Hex ending_hex) {
+    int distance = starting_hex.distance(ending_hex);
+    Hex cursor = starting_hex;
+    std::vector<Hex> line;
+    for (int i = 0; i < HEX_DIRECTIONS_COUNT; ++i) {
+        cursor = starting_hex;
+        line = { starting_hex };
+        for (int j = 0; j < distance; ++j) {
+
+            cursor = hex_neighbour(cursor, i);
+            line.push_back(cursor);
+            if (cursor == ending_hex) {
+                return line;
+            }
+        }
+    }
+
+    return { EMPTY_HEX };
+}
+
 
 
 

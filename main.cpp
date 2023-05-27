@@ -89,14 +89,31 @@ int main() {
         }
         else if (input == DO_MOVE_COMMAND) {
             if (g == nullptr) continue;
+            auto gcopy = std::make_unique<GIPF>(*g);
 
-            g->simple_move();
+            if(!g->simple_move()) {
+                g.swap(gcopy);
+            }
+
             std::cout << std::endl;
         }
         else if (input == PRINT_GAME_COMMAND) {
             if (g == nullptr) continue;
 
             g->print_game_state();
+            std::cout << std::endl;
+        } else if (input == "debug") {
+            auto g2 = std::make_unique<GIPF>(*g);
+            g->add_piece(Hex(0,0), '#');
+            g->print_game_state();
+            g2->print_game_state();
+
+            g->hex_coords.emplace(Hex(7,7), "77");
+            std::cout << "g1 translation: " << g->translate(Hex(7,7)) << " | ";
+            g->translate("a1").print();
+            std::cout << std::endl;
+            std::cout << "g2 translation: " << g->translate(Hex(7,7)) << " | ";
+            g->translate("a1").print();
             std::cout << std::endl;
         }
     }

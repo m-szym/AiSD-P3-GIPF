@@ -37,20 +37,26 @@ public:
     GIPF(int size, int killing_number, int white_pieces, int black_pieces, int white_reserve, int black_reserve, char starting_player);
     GIPF(int params[], char starting_player, std::vector<char> flat_board, bool &good_state);
 
+    GIPF(const GIPF& other);       // copy constructor
+
     bool check_map();
+
+    std::string check_state();
 
     void print_game_state() const;
     void print_coords() const;
 
-    std::vector<Hex> read_move();
-    bool read_move_details(const std::string& details, std::vector<Hex>& move);
+    void print_line(const std::vector<Hex>& line) const;
+
+    std::pair<std::vector<Hex>, char> read_move();
+    bool read_move_details(const std::string &details, std::vector<Hex> &move, char &killer);
 
     bool is_valid_move_basic(std::vector<Hex> move);
-    void make_move(std::vector<Hex> move);
-    void simple_move();
+    bool make_move(const std::pair<std::vector<Hex>, char>& move);
+    bool simple_move();
 
     bool mark_target_line(const std::vector<Hex>& line);
-    void evaluate_turn(const std::vector<Hex>& last_move);
+    bool evaluate_turn(const std::pair<std::vector<Hex>, char> &last_move);
     void kill_targets();
 
     char add_piece(const std::string& coords, char piece) { return board.set(translate(coords), piece); }
