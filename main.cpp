@@ -71,9 +71,9 @@ int main() {
                 std::cout << INVALID_BOARD_ROW_ERROR << std::endl;
             } else {
 
-                if (((int_params[2]) - whites) != int_params[4]) {
+                if (((int_params[2]) - whites) < int_params[4]) {
                     std::cout << INVALID_BOARD_WHITE_PIECES_ERROR << std::endl;
-                } else if (int_params[3] - blacks != int_params[5]) {
+                } else if (int_params[3] - blacks < int_params[5]) {
                     std::cout << INVALID_BOARD_BLACK_PIECES_ERROR << std::endl;
                 } else {
                     bool good_state = false;
@@ -92,9 +92,10 @@ int main() {
             auto gcopy = std::make_unique<GIPF>(*g);
 
             if(!g->simple_move()) {
+                gcopy->state = g->state;
                 g.swap(gcopy);
             }
-
+            g->check_state();
             std::cout << std::endl;
         }
         else if (input == PRINT_GAME_COMMAND) {
@@ -114,6 +115,11 @@ int main() {
             std::cout << std::endl;
             std::cout << "g2 translation: " << g->translate(Hex(7,7)) << " | ";
             g->translate("a1").print();
+            std::cout << std::endl;
+        } else if (input == PRINT_STATE_COMMAND) {
+            if (g == nullptr) continue;
+
+            std::cout << g->state << std::endl;
             std::cout << std::endl;
         }
     }

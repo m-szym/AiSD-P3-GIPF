@@ -33,6 +33,8 @@ public:
     std::unordered_map<std::string, Hex> coords_hex;
     std::unordered_map<Hex, std::string> hex_coords;
 
+    std::string state;
+
 
     GIPF(int size, int killing_number, int white_pieces, int black_pieces, int white_reserve, int black_reserve, char starting_player);
     GIPF(int params[], char starting_player, std::vector<char> flat_board, bool &good_state);

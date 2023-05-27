@@ -30,6 +30,7 @@ const std::string BAD_COMMAND_ERROR = "illegal command";
 const std::string LOAD_BOARD_COMMAND = "LOAD_GAME_BOARD";
 const std::string DO_MOVE_COMMAND = "DO_MOVE";
 const std::string PRINT_GAME_COMMAND = "PRINT_GAME_BOARD";
+const std::string PRINT_STATE_COMMAND = "PRINT_GAME_STATE";
 
 const std::string INVALID_BOARD_WHITE_PIECES_ERROR = "WRONG_WHITE_PAWNS_NUMBER";
 const std::string INVALID_BOARD_BLACK_PIECES_ERROR = "WRONG_BLACK_PAWNS_NUMBER";
@@ -38,5 +39,12 @@ const std::string BAD_MOVE_START = "BAD_MOVE_";
 const std::string BAD_MOVE_IS_WRONG_INDEX = "_IS_WRONG_INDEX";
 
 const std::string BOARD_LOAD_OK = "BOARD_STATE_OK";
+
+const std::string IN_PROGRESS = "in_progress";
+const std::string WHITE_WIN = "white_win";
+const std::string BLACK_WIN = "black_win";
+const std::string DEAD_LOCK = "dead_lock ";
+const std::string BAD_MOVE_ = "bad_move ";
+
 
 #endif //GIPF_CONSTANTS_H
