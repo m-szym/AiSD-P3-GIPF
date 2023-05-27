@@ -66,6 +66,8 @@ Hex hex_neighbour(const Hex& hex, int direction);
 Hex rotate_right(const Hex& hex);
 Hex rotate_left(const Hex& hex);
 
+inline int invert_direction(int direction) { return (direction + (HEX_DIRECTIONS_COUNT / 2)) % HEX_DIRECTIONS_COUNT; }
+
 const Hex EMPTY_HEX(INT_MAX, INT_MAX);
 
 const std::vector<Hex> hex_directions = {

@@ -209,7 +209,7 @@ bool GIPF::make_move(const std::pair<std::vector<Hex>, char>& move) {
         return false;
     }
 
-    std::cout << "MOVE_COMMITTED" << std::endl;
+    //std::cout << "MOVE_COMMITTED" << std::endl;
     board.push_line(line, current_player);
     if (current_player == WHITE_SYMBOL)
         white_reserve--;
@@ -239,6 +239,14 @@ bool GIPF::is_valid_move_basic(std::vector<Hex> move) {
     if (board[move[1]] != WHITE_SYMBOL && board[move[1]] != BLACK_SYMBOL && board[move[1]] != EMPTY_PLACE_SYMBOL) {
         std::cout << "BAD_MOVE_" << translate(move[1]) << "_IS_WRONG_DESTINATION_FIELD" << std::endl;
         return false;
+    }
+
+    if (move.size() == 4) {
+        if (distance(move[2], move[3]) != killing_number - 1) {
+            //std::cout << "dist=" << distance(move[2], move[3]) << "| ";
+            std::cout << "WRONG_INDEX_OF_CHOSEN_ROW" << std::endl;
+            return false;
+        }
     }
 
     return true;
@@ -403,10 +411,17 @@ bool GIPF::evaluate_turn(const std::pair<std::vector<Hex>, char> &last_move) {
         Hex start = move_hexes[2];
         Hex end = move_hexes[3];
         //std::cout << "start = " << translate(start) << " end = " << translate(end) << std::endl;
-        auto special_line = board.simple_get_line(start, end);
-        print_line(special_line);
+        auto special_line = board.color_get_line(start, end, player);
+        if (special_line.empty()) {
+            std::cout << "empty special line" << std::endl;
+            return false;
+        }
+        if (special_line[0] == EMPTY_HEX) {
+            std::cout << "WRONG_COLOR_OF_CHOSEN_ROW" << std::endl;
+            return false;
+        }
+        //print_line(special_line);
         auto it = special_line.begin();
-
         while (it != special_line.end()) {
             if (board[*it] == WHITE_SYMBOL) {
                 if (player == WHITE_SYMBOL) {
@@ -424,6 +439,8 @@ bool GIPF::evaluate_turn(const std::pair<std::vector<Hex>, char> &last_move) {
                     //board.set(*it, BLACK_TARGET_OF_WHITE_SYMBOL);
                     board.set(*it, EMPTY_PLACE_SYMBOL);
                     prisoners_of_black++;
+//                    std::cout << "WRONG_COLOR_OF_CHOSEN_ROW" << std::endl;
+//                    return false;
                 }
                 else if (player == BLACK_SYMBOL) {
                     //board.set(*it, BLACK_TARGET_OF_BLACK_SYMBOL);

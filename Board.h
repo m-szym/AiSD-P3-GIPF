@@ -46,6 +46,8 @@ public:
     char set(Hex hex, char value);
 
     void clear_board();
+
+    std::vector<Hex> color_get_line(Hex starting_hex, Hex ending_hex, char color);
 };
 
 

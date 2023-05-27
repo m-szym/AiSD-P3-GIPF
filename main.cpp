@@ -22,6 +22,15 @@
  *     S
  */
 
+/*
+ *       SE = 0
+ *       NE = 1               SW SS
+ *       N  = 2              NW * SE
+ *       NW = 3               NN NE
+ *       SW = 4
+ *       S  = 5
+ */
+
 int main() {
     std::string input;
     std::unique_ptr<GIPF> g = nullptr;
@@ -94,8 +103,11 @@ int main() {
             if(!g->simple_move()) {
                 gcopy->state = g->state;
                 g.swap(gcopy);
+            } else {
+                g->check_state();
+                std::cout << "MOVE_COMMITTED" << std::endl;
             }
-            g->check_state();
+
             std::cout << std::endl;
         }
         else if (input == PRINT_GAME_COMMAND) {
@@ -104,18 +116,18 @@ int main() {
             g->print_game_state();
             std::cout << std::endl;
         } else if (input == "debug") {
-            auto g2 = std::make_unique<GIPF>(*g);
-            g->add_piece(Hex(0,0), '#');
-            g->print_game_state();
-            g2->print_game_state();
-
-            g->hex_coords.emplace(Hex(7,7), "77");
-            std::cout << "g1 translation: " << g->translate(Hex(7,7)) << " | ";
-            g->translate("a1").print();
-            std::cout << std::endl;
-            std::cout << "g2 translation: " << g->translate(Hex(7,7)) << " | ";
-            g->translate("a1").print();
-            std::cout << std::endl;
+            std::cout << "NE:" << g->translate(g->translate("d4").hex_neighbour(NE)) << std::endl;
+            std::cout << "NW:" << g->translate(g->translate("d4").hex_neighbour(NW)) << std::endl;
+            std::cout << "SE:" << g->translate(g->translate("d4").hex_neighbour(SE)) << std::endl;
+            std::cout << "SW:" << g->translate(g->translate("d4").hex_neighbour(SW)) << std::endl;
+            std::cout << "N:" << g->translate(g->translate("d4").hex_neighbour(N)) << std::endl;
+            std::cout << "S:" << g->translate(g->translate("d4").hex_neighbour(S)) << std::endl;
+            g->board.simple_get_line(g->translate("d4"), g->translate("b4"));
+            g->board.simple_get_line(g->translate("d4"), g->translate("d6"));
+            g->board.simple_get_line(g->translate("d4"), g->translate("d2"));
+            g->board.simple_get_line(g->translate("d4"), g->translate("b2"));
+            g->board.simple_get_line(g->translate("d4"), g->translate("g2"));
+            g->board.simple_get_line(g->translate("d4"), g->translate("h5"));
         } else if (input == PRINT_STATE_COMMAND) {
             if (g == nullptr) continue;
 

@@ -289,20 +289,65 @@ std::vector<Hex> Board::simple_get_line(Hex starting_hex, Hex ending_hex) {
     int distance = starting_hex.distance(ending_hex);
     Hex cursor = starting_hex;
     std::vector<Hex> line;
-    for (int i = 0; i < HEX_DIRECTIONS_COUNT; ++i) {
-        cursor = starting_hex;
-        line = { starting_hex };
-        for (int j = 0; j < distance; ++j) {
 
-            cursor = hex_neighbour(cursor, i);
-            line.push_back(cursor);
-            if (cursor == ending_hex) {
-                return line;
-            }
+    int dir = -1;
+    for (int i = 0; i < HEX_DIRECTIONS_COUNT; ++i) {
+        if (starting_hex + (hex_direction(i) * distance) == ending_hex) {
+            dir = i;
+            break;
         }
     }
+    while (map.find(cursor) != map.end()) {
+        line.push_back(cursor);
+        //if (cursor == ending_hex) break;
+        if (map.at(cursor) == EMPTY_PLACE_SYMBOL || map.at(cursor) == DOT_SYMBOL) break;
+        cursor = hex_neighbour(cursor, dir);
+    }
+    cursor = starting_hex;
+    while (map.find(cursor) != map.end()) {
+        line.push_back(cursor);
+        //if (cursor == ending_hex) break;
+        if (map.at(cursor) == EMPTY_PLACE_SYMBOL || map.at(cursor) == DOT_SYMBOL) break;
+        cursor = hex_neighbour(cursor, invert_direction(dir));
+    }
 
-    return { EMPTY_HEX };
+    return line;
+}
+
+std::vector<Hex> Board::color_get_line(Hex starting_hex, Hex ending_hex, char color) {
+    int distance = starting_hex.distance(ending_hex);
+    Hex cursor = starting_hex;
+    std::vector<Hex> line;
+
+    int dir = -1;
+    for (int i = 0; i < HEX_DIRECTIONS_COUNT; ++i) {
+        if (starting_hex + (hex_direction(i) * distance) == ending_hex) {
+            dir = i;
+            break;
+        }
+    }
+    if (dir == -1) return { EMPTY_HEX };
+
+    bool end_reached = false;
+    int colored = 0;
+    while (map.find(cursor) != map.end()) {
+        if (map.at(cursor) != color && !end_reached) return { EMPTY_HEX };
+        line.push_back(cursor);
+        if (cursor == ending_hex) {
+            end_reached = true;
+        }
+        if (map.at(cursor) == EMPTY_PLACE_SYMBOL || map.at(cursor) == DOT_SYMBOL) break;
+        cursor = hex_neighbour(cursor, dir);
+    }
+    cursor = starting_hex;
+    while (map.find(cursor) != map.end()) {
+        line.push_back(cursor);
+        //if (cursor == ending_hex) break;
+        if (map.at(cursor) == EMPTY_PLACE_SYMBOL || map.at(cursor) == DOT_SYMBOL) break;
+        cursor = hex_neighbour(cursor, invert_direction(dir));
+    }
+
+    return line;
 }
 
 
