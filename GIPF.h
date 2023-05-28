@@ -41,7 +41,7 @@ public:
 
     GIPF(const GIPF& other);       // copy constructor
 
-    bool check_map();
+    bool check_map(bool SILENT);
 
     std::string check_state();
 
@@ -50,15 +50,17 @@ public:
 
     void print_line(const std::vector<Hex>& line) const;
 
-    std::pair<std::vector<Hex>, char> read_move();
-    bool read_move_details(const std::string &details, std::vector<Hex> &move, char &killer);
+    std::pair<std::vector<Hex>, char> read_move(bool SILENT);
+    bool read_move_details(const std::string &details, std::vector<Hex> &move, char &killer, bool SILENT);
 
-    bool is_valid_move_basic(std::vector<Hex> move);
-    bool make_move(const std::pair<std::vector<Hex>, char>& move);
+    bool is_valid_move_basic(std::vector<Hex> move, bool SILENT);
+    bool make_move(const std::pair<std::vector<Hex>, char> &move, bool SILENT);
     bool simple_move();
+    bool simple_move(const std::vector<Hex>& move);
+    bool simple_move(const std::pair<std::vector<Hex>, char>& move);
 
     bool mark_target_line(const std::vector<Hex>& line);
-    bool evaluate_turn(const std::pair<std::vector<Hex>, char> &last_move);
+    bool evaluate_turn(const std::pair<std::vector<Hex>, char> &last_move, bool SILENT);
     void kill_targets();
 
     char add_piece(const std::string& coords, char piece) { return board.set(translate(coords), piece); }

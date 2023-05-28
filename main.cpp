@@ -5,6 +5,7 @@
 #include "Board.h"
 #include "GIPF.h"
 #include "other.h"
+#include "Solver.h"
 
 //
 //           W _ _ B
@@ -98,6 +99,11 @@ int main() {
         }
         else if (input == DO_MOVE_COMMAND) {
             if (g == nullptr) continue;
+            if (g->state == WHITE_WIN || g->state == BLACK_WIN || g->state.contains(DEAD_LOCK)) {
+                std::cout << "GAME_OVER " << g->state << std::endl;
+                continue;
+            }
+
             auto gcopy = std::make_unique<GIPF>(*g);
 
             if(!g->simple_move()) {
@@ -116,6 +122,7 @@ int main() {
             g->print_game_state();
             std::cout << std::endl;
         } else if (input == "debug") {
+            /*
             std::cout << "NE:" << g->translate(g->translate("d4").hex_neighbour(NE)) << std::endl;
             std::cout << "NW:" << g->translate(g->translate("d4").hex_neighbour(NW)) << std::endl;
             std::cout << "SE:" << g->translate(g->translate("d4").hex_neighbour(SE)) << std::endl;
@@ -128,6 +135,20 @@ int main() {
             g->board.simple_get_line(g->translate("d4"), g->translate("b2"));
             g->board.simple_get_line(g->translate("d4"), g->translate("g2"));
             g->board.simple_get_line(g->translate("d4"), g->translate("h5"));
+             */
+
+            Solver s(new GIPF(*g));
+            auto moves = s.get_all_possible_simple_moves();
+            auto legal_moves = s.choose_legal_simple_moves(moves);
+            auto translated_moves = s.translate_simple_moves(legal_moves);
+
+            std::cout << moves.size() << " possible moves" << std::endl;
+            std::cout << legal_moves.size() << " legal moves" << std::endl;
+            int i = 0;
+            for (auto &move : translated_moves) {
+                std::cout << "\tMove [" << i << "]" << " " << move << std::endl;
+                i++;
+            }
         } else if (input == PRINT_STATE_COMMAND) {
             if (g == nullptr) continue;
 
